@@ -13,7 +13,6 @@
 #define TERMCOLOR_HPP_
 
 #include <iostream>
-#include <cstdio>
 
 // Detect target's platform and set some macros in order to wrap platform
 // specific code this library depends on.
@@ -53,35 +52,45 @@ namespace termcolor
     {
         inline int colorize_index();
         inline FILE* get_standard_stream(const std::ostream& stream);
-        inline bool is_colorized(std::ostream& stream);
-        inline bool is_atty(const std::ostream& stream);
+        inline FILE* get_standard_stream(const std::wostream& stream);
+        template <typename CharT>
+        inline bool is_colorized(std::basic_ostream<CharT>& stream);
+        template <typename CharT>
+        inline bool is_atty(const std::basic_ostream<CharT>& stream);
 
     #if defined(TERMCOLOR_TARGET_WINDOWS)
-        inline void win_change_attributes(std::ostream& stream, int foreground, int background=-1);
+        inline void win_change_attributes(std::ostream& stream, int foreground, int background = -1);
+        inline void win_change_attributes(std::wostream& stream, int foreground, int background = -1);
     #endif
     }
 
+    template <typename CharT>
     inline
-    std::ostream& colorize(std::ostream& stream)
+    std::basic_ostream<CharT>& colorize(std::basic_ostream<CharT>& stream)
     {
         stream.iword(_internal::colorize_index()) = 1L;
         return stream;
     }
 
+    template <typename CharT>
     inline
-    std::ostream& nocolorize(std::ostream& stream)
+    std::basic_ostream<CharT>& nocolorize(std::basic_ostream<CharT>& stream)
     {
         stream.iword(_internal::colorize_index()) = 0L;
         return stream;
     }
 
+    template <typename CharT>
     inline
-    std::ostream& reset(std::ostream& stream)
+    std::basic_ostream<CharT>& reset(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
         #if defined(TERMCOLOR_USE_ANSI_ESCAPE_SEQUENCES)
-            stream << "\033[00m";
+            if (std::is_same<CharT, wchar_t>::value)
+                stream << L"\033[00m";
+            else
+                stream << "\033[00m";
         #elif defined(TERMCOLOR_USE_WINDOWS_API)
             _internal::win_change_attributes(stream, -1, -1);
         #endif
@@ -89,52 +98,68 @@ namespace termcolor
         return stream;
     }
 
+    template <typename CharT>
     inline
-    std::ostream& bold(std::ostream& stream)
+    std::basic_ostream<CharT>& bold(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
         #if defined(TERMCOLOR_USE_ANSI_ESCAPE_SEQUENCES)
-            stream << "\033[1m";
+            if (std::is_same<CharT, wchar_t>::value)
+                stream << L"\033[1m";
+            else
+                stream << "\033[1m";
         #elif defined(TERMCOLOR_USE_WINDOWS_API)
         #endif
         }
         return stream;
     }
 
+    template <typename CharT>
     inline
-    std::ostream& dark(std::ostream& stream)
+    std::basic_ostream<CharT>& dark(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
         #if defined(TERMCOLOR_USE_ANSI_ESCAPE_SEQUENCES)
-            stream << "\033[2m";
+            if (std::is_same<CharT, wchar_t>::value)
+                stream << L"\033[2m";
+            else
+                stream << "\033[2m";
         #elif defined(TERMCOLOR_USE_WINDOWS_API)
         #endif
         }
         return stream;
     }
 
+    template <typename CharT>
     inline
-    std::ostream& italic(std::ostream& stream)
+    std::basic_ostream<CharT>& italic(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
         #if defined(TERMCOLOR_USE_ANSI_ESCAPE_SEQUENCES)
-            stream << "\033[3m";
+            if (std::is_same<CharT, wchar_t>::value)
+                stream << L"\033[3m";
+            else
+                stream << "\033[3m";
         #elif defined(TERMCOLOR_USE_WINDOWS_API)
         #endif
         }
         return stream;
     }
 
+    template <typename CharT>
     inline
-    std::ostream& underline(std::ostream& stream)
+    std::basic_ostream<CharT>& underline(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
         #if defined(TERMCOLOR_USE_ANSI_ESCAPE_SEQUENCES)
-            stream << "\033[4m";
+            if (std::is_same<CharT, wchar_t>::value)
+                stream << L"\033[4m";
+            else
+                stream << "\033[4m";
         #elif defined(TERMCOLOR_USE_WINDOWS_API)
             _internal::win_change_attributes(stream, -1, COMMON_LVB_UNDERSCORE);
         #endif
@@ -142,125 +167,149 @@ namespace termcolor
         return stream;
     }
 
+    template <typename CharT>
     inline
-    std::ostream& blink(std::ostream& stream)
+    std::basic_ostream<CharT>& blink(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
         #if defined(TERMCOLOR_USE_ANSI_ESCAPE_SEQUENCES)
-            stream << "\033[5m";
+            if (std::is_same<CharT, wchar_t>::value)
+                stream << L"\033[5m";
+            else
+                stream << "\033[5m";
         #elif defined(TERMCOLOR_USE_WINDOWS_API)
         #endif
         }
         return stream;
     }
 
+    template <typename CharT>
     inline
-    std::ostream& reverse(std::ostream& stream)
+    std::basic_ostream<CharT>& reverse(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
         #if defined(TERMCOLOR_USE_ANSI_ESCAPE_SEQUENCES)
-            stream << "\033[7m";
+            if (std::is_same<CharT, wchar_t>::value)
+                stream << L"\033[7m";
+            else
+                stream << "\033[7m";
         #elif defined(TERMCOLOR_USE_WINDOWS_API)
         #endif
         }
         return stream;
     }
 
+    template <typename CharT>
     inline
-    std::ostream& concealed(std::ostream& stream)
+    std::basic_ostream<CharT>& concealed(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
         #if defined(TERMCOLOR_USE_ANSI_ESCAPE_SEQUENCES)
-            stream << "\033[8m";
+            if (std::is_same<CharT, wchar_t>::value)
+                stream << L"\033[8m";
+            else
+                stream << "\033[8m";
         #elif defined(TERMCOLOR_USE_WINDOWS_API)
         #endif
         }
         return stream;
     }
 
+    template <typename CharT>
     inline
-    std::ostream& crossed(std::ostream& stream)
+    std::basic_ostream<CharT>& crossed(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
         #if defined(TERMCOLOR_USE_ANSI_ESCAPE_SEQUENCES)
-            stream << "\033[9m";
+            if (std::is_same<CharT, wchar_t>::value)
+                stream << L"\033[9m";
+            else
+                stream << "\033[9m";
+        #elif defined(TERMCOLOR_USE_WINDOWS_API)
+        #endif
+        }
+        return stream;
+    }
+    
+    template <uint8_t code, typename CharT> inline
+    std::basic_ostream<CharT>& color(std::basic_ostream<CharT>& stream)
+    {
+        if (_internal::is_colorized(stream))
+        {
+        #if defined(TERMCOLOR_USE_ANSI_ESCAPE_SEQUENCES)
+            if (std::is_same<CharT, wchar_t>::value)
+                stream << L"\033[38;5;" << code << L"m";
+            else
+                stream << "\033[38;5;" << code << "m";
         #elif defined(TERMCOLOR_USE_WINDOWS_API)
         #endif
         }
         return stream;
     }
 
-    template <uint8_t code> inline
-    std::ostream& color(std::ostream& stream)
+    template <uint8_t code, typename CharT> inline
+    std::basic_ostream<CharT>& on_color(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
         #if defined(TERMCOLOR_USE_ANSI_ESCAPE_SEQUENCES)
-            char command[12];
-            std::snprintf(command, sizeof(command), "\033[38;5;%dm", code);
-            stream << command;
+            if (std::is_same<CharT, wchar_t>::value)
+                stream << L"\033[48;5;" << code << L"m";
+            else
+                stream << "\033[48;5;" << code << "m";
         #elif defined(TERMCOLOR_USE_WINDOWS_API)
         #endif
         }
         return stream;
     }
 
-    template <uint8_t code> inline
-    std::ostream& on_color(std::ostream& stream)
+    template <uint8_t r, uint8_t g, uint8_t b, typename CharT> inline
+    std::basic_ostream<CharT>& color(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
         #if defined(TERMCOLOR_USE_ANSI_ESCAPE_SEQUENCES)
-            char command[12];
-            std::snprintf(command, sizeof(command), "\033[48;5;%dm", code);
-            stream << command;
+            if (std::is_same<CharT, wchar_t>::value)
+                stream << L"\033[38;2;" << r << L";" << g << L";" << b << L"m";
+            else
+                stream << "\033[38;2;" << r << ";" << g << ";" << b << "m";
         #elif defined(TERMCOLOR_USE_WINDOWS_API)
         #endif
         }
         return stream;
     }
 
-    template <uint8_t r, uint8_t g, uint8_t b> inline
-    std::ostream& color(std::ostream& stream)
+    template <uint8_t r, uint8_t g, uint8_t b, typename CharT> inline
+    std::basic_ostream<CharT>& on_color(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
         #if defined(TERMCOLOR_USE_ANSI_ESCAPE_SEQUENCES)
-            char command[20];
-            std::snprintf(command, sizeof(command), "\033[38;2;%d;%d;%dm", r, g, b);
-            stream << command;
+            if (std::is_same<CharT, wchar_t>::value)
+                stream << L"\033[48;2;" << r << L";" << g << L";" << b << L"m";
+            else
+                stream << "\033[48;2;" << r << ";" << g << ";" << b << "m";
         #elif defined(TERMCOLOR_USE_WINDOWS_API)
         #endif
         }
         return stream;
     }
 
-    template <uint8_t r, uint8_t g, uint8_t b> inline
-    std::ostream& on_color(std::ostream& stream)
-    {
-        if (_internal::is_colorized(stream))
-        {
-        #if defined(TERMCOLOR_USE_ANSI_ESCAPE_SEQUENCES)
-            char command[20];
-            std::snprintf(command, sizeof(command), "\033[48;2;%d;%d;%dm", r, g, b);
-            stream << command;
-        #elif defined(TERMCOLOR_USE_WINDOWS_API)
-        #endif
-        }
-        return stream;
-    }
-
+    template <typename CharT>
     inline
-    std::ostream& grey(std::ostream& stream)
+    std::basic_ostream<CharT>& grey(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
         #if defined(TERMCOLOR_USE_ANSI_ESCAPE_SEQUENCES)
-            stream << "\033[30m";
+            if (std::is_same<CharT, wchar_t>::value)
+                stream << L"\033[30m";
+            else
+                stream << "\033[30m";
         #elif defined(TERMCOLOR_USE_WINDOWS_API)
             _internal::win_change_attributes(stream,
                 0   // grey (black)
@@ -270,13 +319,17 @@ namespace termcolor
         return stream;
     }
 
+    template <typename CharT>
     inline
-    std::ostream& red(std::ostream& stream)
+    std::basic_ostream<CharT>& red(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
         #if defined(TERMCOLOR_USE_ANSI_ESCAPE_SEQUENCES)
-            stream << "\033[31m";
+            if (std::is_same<CharT, wchar_t>::value)
+                stream << L"\033[31m";
+            else
+                stream << "\033[31m";
         #elif defined(TERMCOLOR_USE_WINDOWS_API)
             _internal::win_change_attributes(stream,
                 FOREGROUND_RED
@@ -286,13 +339,17 @@ namespace termcolor
         return stream;
     }
 
+    template <typename CharT>
     inline
-    std::ostream& green(std::ostream& stream)
+    std::basic_ostream<CharT>& green(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
         #if defined(TERMCOLOR_USE_ANSI_ESCAPE_SEQUENCES)
-            stream << "\033[32m";
+            if (std::is_same<CharT, wchar_t>::value)
+                stream << L"\033[32m";
+            else
+                stream << "\033[32m";
         #elif defined(TERMCOLOR_USE_WINDOWS_API)
             _internal::win_change_attributes(stream,
                 FOREGROUND_GREEN
@@ -302,13 +359,17 @@ namespace termcolor
         return stream;
     }
 
+    template <typename CharT>
     inline
-    std::ostream& yellow(std::ostream& stream)
+    std::basic_ostream<CharT>& yellow(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
         #if defined(TERMCOLOR_USE_ANSI_ESCAPE_SEQUENCES)
-            stream << "\033[33m";
+            if (std::is_same<CharT, wchar_t>::value)
+                stream << L"\033[33m";
+            else
+                stream << "\033[33m";
         #elif defined(TERMCOLOR_USE_WINDOWS_API)
             _internal::win_change_attributes(stream,
                 FOREGROUND_GREEN | FOREGROUND_RED
@@ -318,13 +379,17 @@ namespace termcolor
         return stream;
     }
 
+    template <typename CharT>
     inline
-    std::ostream& blue(std::ostream& stream)
+    std::basic_ostream<CharT>& blue(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
         #if defined(TERMCOLOR_USE_ANSI_ESCAPE_SEQUENCES)
-            stream << "\033[34m";
+            if (std::is_same<CharT, wchar_t>::value)
+                stream << L"\033[34m";
+            else
+                stream << "\033[34m";
         #elif defined(TERMCOLOR_USE_WINDOWS_API)
             _internal::win_change_attributes(stream,
                 FOREGROUND_BLUE
@@ -334,13 +399,17 @@ namespace termcolor
         return stream;
     }
 
+    template <typename CharT>
     inline
-    std::ostream& magenta(std::ostream& stream)
+    std::basic_ostream<CharT>& magenta(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
         #if defined(TERMCOLOR_USE_ANSI_ESCAPE_SEQUENCES)
-            stream << "\033[35m";
+            if (std::is_same<CharT, wchar_t>::value)
+                stream << L"\033[35m";
+            else
+                stream << "\033[35m";
         #elif defined(TERMCOLOR_USE_WINDOWS_API)
             _internal::win_change_attributes(stream,
                 FOREGROUND_BLUE | FOREGROUND_RED
@@ -350,13 +419,17 @@ namespace termcolor
         return stream;
     }
 
+    template <typename CharT>
     inline
-    std::ostream& cyan(std::ostream& stream)
+    std::basic_ostream<CharT>& cyan(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
         #if defined(TERMCOLOR_USE_ANSI_ESCAPE_SEQUENCES)
-            stream << "\033[36m";
+            if (std::is_same<CharT, wchar_t>::value)
+                stream << L"\033[36m";
+            else
+                stream << "\033[36m";
         #elif defined(TERMCOLOR_USE_WINDOWS_API)
             _internal::win_change_attributes(stream,
                 FOREGROUND_BLUE | FOREGROUND_GREEN
@@ -366,13 +439,17 @@ namespace termcolor
         return stream;
     }
 
+    template <typename CharT>
     inline
-    std::ostream& white(std::ostream& stream)
+    std::basic_ostream<CharT>& white(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
         #if defined(TERMCOLOR_USE_ANSI_ESCAPE_SEQUENCES)
-            stream << "\033[37m";
+            if (std::is_same<CharT, wchar_t>::value)
+                stream << L"\033[37m";
+            else
+                stream << "\033[37m";
         #elif defined(TERMCOLOR_USE_WINDOWS_API)
             _internal::win_change_attributes(stream,
                 FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED
@@ -383,13 +460,17 @@ namespace termcolor
     }
 
 
+    template <typename CharT>
     inline
-    std::ostream& bright_grey(std::ostream& stream)
+    std::basic_ostream<CharT>& bright_grey(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
         #if defined(TERMCOLOR_USE_ANSI_ESCAPE_SEQUENCES)
-            stream << "\033[90m";
+            if (std::is_same<CharT, wchar_t>::value)
+                stream << L"\033[90m";
+            else
+                stream << "\033[90m";
         #elif defined(TERMCOLOR_USE_WINDOWS_API)
             _internal::win_change_attributes(stream,
                 0 | FOREGROUND_INTENSITY   // grey (black)
@@ -399,13 +480,17 @@ namespace termcolor
         return stream;
     }
 
+    template <typename CharT>
     inline
-    std::ostream& bright_red(std::ostream& stream)
+    std::basic_ostream<CharT>& bright_red(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
         #if defined(TERMCOLOR_USE_ANSI_ESCAPE_SEQUENCES)
-            stream << "\033[91m";
+            if (std::is_same<CharT, wchar_t>::value)
+                stream << L"\033[91m";
+            else
+                stream << "\033[91m";
         #elif defined(TERMCOLOR_USE_WINDOWS_API)
             _internal::win_change_attributes(stream,
                 FOREGROUND_RED | FOREGROUND_INTENSITY
@@ -415,13 +500,17 @@ namespace termcolor
         return stream;
     }
 
+    template <typename CharT>
     inline
-    std::ostream& bright_green(std::ostream& stream)
+    std::basic_ostream<CharT>& bright_green(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
         #if defined(TERMCOLOR_USE_ANSI_ESCAPE_SEQUENCES)
-            stream << "\033[92m";
+            if (std::is_same<CharT, wchar_t>::value)
+                stream << L"\033[92m";
+            else
+                stream << "\033[92m";
         #elif defined(TERMCOLOR_USE_WINDOWS_API)
             _internal::win_change_attributes(stream,
                 FOREGROUND_GREEN | FOREGROUND_INTENSITY
@@ -431,13 +520,17 @@ namespace termcolor
         return stream;
     }
 
+    template <typename CharT>
     inline
-    std::ostream& bright_yellow(std::ostream& stream)
+    std::basic_ostream<CharT>& bright_yellow(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
         #if defined(TERMCOLOR_USE_ANSI_ESCAPE_SEQUENCES)
-            stream << "\033[93m";
+            if (std::is_same<CharT, wchar_t>::value)
+                stream << L"\033[93m";
+            else
+                stream << "\033[93m";
         #elif defined(TERMCOLOR_USE_WINDOWS_API)
             _internal::win_change_attributes(stream,
                 FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_INTENSITY
@@ -447,13 +540,17 @@ namespace termcolor
         return stream;
     }
 
+    template <typename CharT>
     inline
-    std::ostream& bright_blue(std::ostream& stream)
+    std::basic_ostream<CharT>& bright_blue(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
         #if defined(TERMCOLOR_USE_ANSI_ESCAPE_SEQUENCES)
-            stream << "\033[94m";
+            if (std::is_same<CharT, wchar_t>::value)
+                stream << L"\033[94m";
+            else
+                stream << "\033[94m";
         #elif defined(TERMCOLOR_USE_WINDOWS_API)
             _internal::win_change_attributes(stream,
                 FOREGROUND_BLUE | FOREGROUND_INTENSITY
@@ -463,13 +560,17 @@ namespace termcolor
         return stream;
     }
 
+    template <typename CharT>
     inline
-    std::ostream& bright_magenta(std::ostream& stream)
+    std::basic_ostream<CharT>& bright_magenta(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
         #if defined(TERMCOLOR_USE_ANSI_ESCAPE_SEQUENCES)
-            stream << "\033[95m";
+            if (std::is_same<CharT, wchar_t>::value)
+                stream << L"\033[95m";
+            else
+                stream << "\033[95m";
         #elif defined(TERMCOLOR_USE_WINDOWS_API)
             _internal::win_change_attributes(stream,
                 FOREGROUND_BLUE | FOREGROUND_RED | FOREGROUND_INTENSITY
@@ -479,13 +580,17 @@ namespace termcolor
         return stream;
     }
 
+    template <typename CharT>
     inline
-    std::ostream& bright_cyan(std::ostream& stream)
+    std::basic_ostream<CharT>& bright_cyan(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
         #if defined(TERMCOLOR_USE_ANSI_ESCAPE_SEQUENCES)
-            stream << "\033[96m";
+            if (std::is_same<CharT, wchar_t>::value)
+                stream << L"\033[96m";
+            else
+                stream << "\033[96m";
         #elif defined(TERMCOLOR_USE_WINDOWS_API)
             _internal::win_change_attributes(stream,
                 FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY
@@ -495,13 +600,17 @@ namespace termcolor
         return stream;
     }
 
+    template <typename CharT>
     inline
-    std::ostream& bright_white(std::ostream& stream)
+    std::basic_ostream<CharT>& bright_white(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
         #if defined(TERMCOLOR_USE_ANSI_ESCAPE_SEQUENCES)
-            stream << "\033[97m";
+            if (std::is_same<CharT, wchar_t>::value)
+                stream << L"\033[97m";
+            else
+                stream << "\033[97m";
         #elif defined(TERMCOLOR_USE_WINDOWS_API)
             _internal::win_change_attributes(stream,
                 FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_INTENSITY
@@ -512,13 +621,17 @@ namespace termcolor
     }
 
 
+    template <typename CharT>
     inline
-    std::ostream& on_grey(std::ostream& stream)
+    std::basic_ostream<CharT>& on_grey(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
         #if defined(TERMCOLOR_USE_ANSI_ESCAPE_SEQUENCES)
-            stream << "\033[40m";
+            if (std::is_same<CharT, wchar_t>::value)
+                stream << L"\033[40m";
+            else
+                stream << "\033[40m";
         #elif defined(TERMCOLOR_USE_WINDOWS_API)
             _internal::win_change_attributes(stream, -1,
                 0   // grey (black)
@@ -528,13 +641,17 @@ namespace termcolor
         return stream;
     }
 
+    template <typename CharT>
     inline
-    std::ostream& on_red(std::ostream& stream)
+    std::basic_ostream<CharT>& on_red(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
         #if defined(TERMCOLOR_USE_ANSI_ESCAPE_SEQUENCES)
-            stream << "\033[41m";
+            if (std::is_same<CharT, wchar_t>::value)
+                stream << L"\033[41m";
+            else
+                stream << "\033[41m";
         #elif defined(TERMCOLOR_USE_WINDOWS_API)
             _internal::win_change_attributes(stream, -1,
                 BACKGROUND_RED
@@ -544,13 +661,17 @@ namespace termcolor
         return stream;
     }
 
+    template <typename CharT>
     inline
-    std::ostream& on_green(std::ostream& stream)
+    std::basic_ostream<CharT>& on_green(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
         #if defined(TERMCOLOR_USE_ANSI_ESCAPE_SEQUENCES)
-            stream << "\033[42m";
+            if (std::is_same<CharT, wchar_t>::value)
+                stream << L"\033[42m";
+            else
+                stream << "\033[42m";
         #elif defined(TERMCOLOR_USE_WINDOWS_API)
             _internal::win_change_attributes(stream, -1,
                 BACKGROUND_GREEN
@@ -560,13 +681,17 @@ namespace termcolor
         return stream;
     }
 
+    template <typename CharT>
     inline
-    std::ostream& on_yellow(std::ostream& stream)
+    std::basic_ostream<CharT>& on_yellow(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
         #if defined(TERMCOLOR_USE_ANSI_ESCAPE_SEQUENCES)
-            stream << "\033[43m";
+            if (std::is_same<CharT, wchar_t>::value)
+                stream << L"\033[43m";
+            else
+                stream << "\033[43m";
         #elif defined(TERMCOLOR_USE_WINDOWS_API)
             _internal::win_change_attributes(stream, -1,
                 BACKGROUND_GREEN | BACKGROUND_RED
@@ -576,13 +701,17 @@ namespace termcolor
         return stream;
     }
 
+    template <typename CharT>
     inline
-    std::ostream& on_blue(std::ostream& stream)
+    std::basic_ostream<CharT>& on_blue(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
         #if defined(TERMCOLOR_USE_ANSI_ESCAPE_SEQUENCES)
-            stream << "\033[44m";
+            if (std::is_same<CharT, wchar_t>::value)
+                stream << L"\033[44m";
+            else
+                stream << "\033[44m";
         #elif defined(TERMCOLOR_USE_WINDOWS_API)
             _internal::win_change_attributes(stream, -1,
                 BACKGROUND_BLUE
@@ -592,13 +721,17 @@ namespace termcolor
         return stream;
     }
 
+    template <typename CharT>
     inline
-    std::ostream& on_magenta(std::ostream& stream)
+    std::basic_ostream<CharT>& on_magenta(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
         #if defined(TERMCOLOR_USE_ANSI_ESCAPE_SEQUENCES)
-            stream << "\033[45m";
+            if (std::is_same<CharT, wchar_t>::value)
+                stream << L"\033[45m";
+            else
+                stream << "\033[45m";
         #elif defined(TERMCOLOR_USE_WINDOWS_API)
             _internal::win_change_attributes(stream, -1,
                 BACKGROUND_BLUE | BACKGROUND_RED
@@ -608,13 +741,17 @@ namespace termcolor
         return stream;
     }
 
+    template <typename CharT>
     inline
-    std::ostream& on_cyan(std::ostream& stream)
+    std::basic_ostream<CharT>& on_cyan(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
         #if defined(TERMCOLOR_USE_ANSI_ESCAPE_SEQUENCES)
-            stream << "\033[46m";
+            if (std::is_same<CharT, wchar_t>::value)
+                stream << L"\033[46m";
+            else
+                stream << "\033[46m";
         #elif defined(TERMCOLOR_USE_WINDOWS_API)
             _internal::win_change_attributes(stream, -1,
                 BACKGROUND_GREEN | BACKGROUND_BLUE
@@ -624,13 +761,17 @@ namespace termcolor
         return stream;
     }
 
+    template <typename CharT>
     inline
-    std::ostream& on_white(std::ostream& stream)
+    std::basic_ostream<CharT>& on_white(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
         #if defined(TERMCOLOR_USE_ANSI_ESCAPE_SEQUENCES)
-            stream << "\033[47m";
+            if (std::is_same<CharT, wchar_t>::value)
+                stream << L"\033[47m";
+            else
+                stream << "\033[47m";
         #elif defined(TERMCOLOR_USE_WINDOWS_API)
             _internal::win_change_attributes(stream, -1,
                 BACKGROUND_GREEN | BACKGROUND_BLUE | BACKGROUND_RED
@@ -642,13 +783,17 @@ namespace termcolor
     }
 
 
+    template <typename CharT>
     inline
-    std::ostream& on_bright_grey(std::ostream& stream)
+    std::basic_ostream<CharT>& on_bright_grey(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
         #if defined(TERMCOLOR_USE_ANSI_ESCAPE_SEQUENCES)
-            stream << "\033[100m";
+            if (std::is_same<CharT, wchar_t>::value)
+                stream << L"\033[100m";
+            else
+                stream << "\033[100m";
         #elif defined(TERMCOLOR_USE_WINDOWS_API)
             _internal::win_change_attributes(stream, -1,
                 0 | BACKGROUND_INTENSITY   // grey (black)
@@ -658,13 +803,17 @@ namespace termcolor
         return stream;
     }
 
+    template <typename CharT>
     inline
-    std::ostream& on_bright_red(std::ostream& stream)
+    std::basic_ostream<CharT>& on_bright_red(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
         #if defined(TERMCOLOR_USE_ANSI_ESCAPE_SEQUENCES)
-            stream << "\033[101m";
+            if (std::is_same<CharT, wchar_t>::value)
+                stream << L"\033[101m";
+            else
+                stream << "\033[101m";
         #elif defined(TERMCOLOR_USE_WINDOWS_API)
             _internal::win_change_attributes(stream, -1,
                 BACKGROUND_RED | BACKGROUND_INTENSITY
@@ -674,13 +823,17 @@ namespace termcolor
         return stream;
     }
 
+    template <typename CharT>
     inline
-    std::ostream& on_bright_green(std::ostream& stream)
+    std::basic_ostream<CharT>& on_bright_green(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
         #if defined(TERMCOLOR_USE_ANSI_ESCAPE_SEQUENCES)
-            stream << "\033[102m";
+            if (std::is_same<CharT, wchar_t>::value)
+                stream << L"\033[102m";
+            else
+                stream << "\033[102m";
         #elif defined(TERMCOLOR_USE_WINDOWS_API)
             _internal::win_change_attributes(stream, -1,
                 BACKGROUND_GREEN | BACKGROUND_INTENSITY
@@ -690,13 +843,17 @@ namespace termcolor
         return stream;
     }
 
+    template <typename CharT>
     inline
-    std::ostream& on_bright_yellow(std::ostream& stream)
+    std::basic_ostream<CharT>& on_bright_yellow(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
         #if defined(TERMCOLOR_USE_ANSI_ESCAPE_SEQUENCES)
-            stream << "\033[103m";
+            if (std::is_same<CharT, wchar_t>::value)
+                stream << L"\033[103m";
+            else
+                stream << "\033[103m";
         #elif defined(TERMCOLOR_USE_WINDOWS_API)
             _internal::win_change_attributes(stream, -1,
                 BACKGROUND_GREEN | BACKGROUND_RED | BACKGROUND_INTENSITY
@@ -706,13 +863,17 @@ namespace termcolor
         return stream;
     }
 
+    template <typename CharT>
     inline
-    std::ostream& on_bright_blue(std::ostream& stream)
+    std::basic_ostream<CharT>& on_bright_blue(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
         #if defined(TERMCOLOR_USE_ANSI_ESCAPE_SEQUENCES)
-            stream << "\033[104m";
+            if (std::is_same<CharT, wchar_t>::value)
+                stream << L"\033[104m";
+            else
+                stream << "\033[104m";
         #elif defined(TERMCOLOR_USE_WINDOWS_API)
             _internal::win_change_attributes(stream, -1,
                 BACKGROUND_BLUE | BACKGROUND_INTENSITY
@@ -722,13 +883,17 @@ namespace termcolor
         return stream;
     }
 
+    template <typename CharT>
     inline
-    std::ostream& on_bright_magenta(std::ostream& stream)
+    std::basic_ostream<CharT>& on_bright_magenta(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
         #if defined(TERMCOLOR_USE_ANSI_ESCAPE_SEQUENCES)
-            stream << "\033[105m";
+            if (std::is_same<CharT, wchar_t>::value)
+                stream << L"\033[105m";
+            else
+                stream << "\033[105m";
         #elif defined(TERMCOLOR_USE_WINDOWS_API)
             _internal::win_change_attributes(stream, -1,
                 BACKGROUND_BLUE | BACKGROUND_RED | BACKGROUND_INTENSITY
@@ -738,13 +903,17 @@ namespace termcolor
         return stream;
     }
 
+    template <typename CharT>
     inline
-    std::ostream& on_bright_cyan(std::ostream& stream)
+    std::basic_ostream<CharT>& on_bright_cyan(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
         #if defined(TERMCOLOR_USE_ANSI_ESCAPE_SEQUENCES)
-            stream << "\033[106m";
+            if (std::is_same<CharT, wchar_t>::value)
+                stream << L"\033[106m";
+            else
+                stream << "\033[106m";
         #elif defined(TERMCOLOR_USE_WINDOWS_API)
             _internal::win_change_attributes(stream, -1,
                 BACKGROUND_GREEN | BACKGROUND_BLUE | BACKGROUND_INTENSITY
@@ -754,13 +923,17 @@ namespace termcolor
         return stream;
     }
 
+    template <typename CharT>
     inline
-    std::ostream& on_bright_white(std::ostream& stream)
+    std::basic_ostream<CharT>& on_bright_white(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
         #if defined(TERMCOLOR_USE_ANSI_ESCAPE_SEQUENCES)
-            stream << "\033[107m";
+            if (std::is_same<CharT, wchar_t>::value)
+                stream << L"\033[107m";
+            else
+                stream << "\033[107m";
         #elif defined(TERMCOLOR_USE_WINDOWS_API)
             _internal::win_change_attributes(stream, -1,
                 BACKGROUND_GREEN | BACKGROUND_BLUE | BACKGROUND_RED | BACKGROUND_INTENSITY
@@ -798,7 +971,21 @@ namespace termcolor
         {
             if (&stream == &std::cout)
                 return stdout;
-            else if ((&stream == &std::cerr) || (&stream == &std::clog))
+            else if (&stream == &std::cerr || &stream == &std::clog)
+                return stderr;
+
+            return nullptr;
+        }
+
+        //! Since C++ hasn't a true way to extract stream handler
+        //! from the a given `std::ostream` object, I have to write
+        //! this kind of hack.
+        inline
+        FILE* get_standard_stream(const std::wostream& stream)
+        {
+            if (&stream == &std::wcout)
+                return stdout;
+            else if (&stream == &std::wcerr || &stream == &std::wclog)
                 return stderr;
 
             return nullptr;
@@ -807,16 +994,18 @@ namespace termcolor
         // Say whether a given stream should be colorized or not. It's always
         // true for ATTY streams and may be true for streams marked with
         // colorize flag.
+        template <typename CharT>
         inline
-        bool is_colorized(std::ostream& stream)
+        bool is_colorized(std::basic_ostream<CharT>& stream)
         {
             return is_atty(stream) || static_cast<bool>(stream.iword(colorize_index()));
         }
 
         //! Test whether a given `std::ostream` object refers to
         //! a terminal.
+        template <typename CharT>
         inline
-        bool is_atty(const std::ostream& stream)
+        bool is_atty(const std::basic_ostream<CharT>& stream)
         {
             FILE* std_stream = get_standard_stream(stream);
 
@@ -855,7 +1044,64 @@ namespace termcolor
             HANDLE hTerminal = INVALID_HANDLE_VALUE;
             if (&stream == &std::cout)
                 hTerminal = GetStdHandle(STD_OUTPUT_HANDLE);
-            else if (&stream == &std::cerr)
+            else if (&stream == &std::cerr || &stream == &std::clog)
+                hTerminal = GetStdHandle(STD_ERROR_HANDLE);
+
+            // save default terminal attributes if it unsaved
+            if (!defaultAttributes)
+            {
+                CONSOLE_SCREEN_BUFFER_INFO info;
+                if (!GetConsoleScreenBufferInfo(hTerminal, &info))
+                    return;
+                defaultAttributes = info.wAttributes;
+            }
+
+            // restore all default settings
+            if (foreground == -1 && background == -1)
+            {
+                SetConsoleTextAttribute(hTerminal, defaultAttributes);
+                return;
+            }
+
+            // get current settings
+            CONSOLE_SCREEN_BUFFER_INFO info;
+            if (!GetConsoleScreenBufferInfo(hTerminal, &info))
+                return;
+
+            if (foreground != -1)
+            {
+                info.wAttributes &= ~(info.wAttributes & 0x0F);
+                info.wAttributes |= static_cast<WORD>(foreground);
+            }
+
+            if (background != -1)
+            {
+                info.wAttributes &= ~(info.wAttributes & 0xF0);
+                info.wAttributes |= static_cast<WORD>(background);
+            }
+
+            SetConsoleTextAttribute(hTerminal, info.wAttributes);
+        }
+
+        //! Change Windows Terminal colors attribute. If some
+        //! parameter is `-1` then attribute won't changed.
+        inline void win_change_attributes(std::wostream& stream, int foreground, int background)
+        {
+            // yeah, i know.. it's ugly, it's windows.
+            static WORD defaultAttributes = 0;
+
+            // Windows doesn't have ANSI escape sequences and so we use special
+            // API to change Terminal output color. That means we can't
+            // manipulate colors by means of "std::stringstream" and hence
+            // should do nothing in this case.
+            if (!_internal::is_atty(stream))
+                return;
+
+            // get terminal handle
+            HANDLE hTerminal = INVALID_HANDLE_VALUE;
+            if (&stream == &std::wcout)
+                hTerminal = GetStdHandle(STD_OUTPUT_HANDLE);
+            else if (&stream == &std::wcerr || &stream == &std::wclog)
                 hTerminal = GetStdHandle(STD_ERROR_HANDLE);
 
             // save default terminal attributes if it unsaved
